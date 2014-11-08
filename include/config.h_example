@@ -1,0 +1,5 @@
+#define SSID "bla"
+#define SSID_PASSWORD "bla"
+
+#define user_procTaskPrio        0
+#define user_procTaskQueueLen    1

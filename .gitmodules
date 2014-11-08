@@ -1,0 +1,6 @@
+[submodule "driver/i2c_hd44780"]
+	path = driver/i2c_hd44780
+	url = https://github.com/zarya/esp8266_i2c_hd44780.git
+[submodule "driver/i2c"]
+	path = driver/i2c
+	url = https://github.com/zarya/esp8266_i2c_driver.git
