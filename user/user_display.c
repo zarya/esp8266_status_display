@@ -4,9 +4,18 @@ volatile uint8 display_page = 1;
 static volatile os_timer_t refresh_timer;
 
 void ICACHE_FLASH_ATTR
-display_refresh(void)
+display_refresh(uint8 start)
 {
     //Refresh the display
+    os_timer_disarm(&refresh_timer);
+    os_timer_setfn(&refresh_timer, (os_timer_func_t *)display_refresh, 0);
+    os_timer_arm(&refresh_timer, 5000, 0);
+    if (start == 1) {
+        display_redraw();
+        return;
+    }
+    display_page--;
+    if (display_page == 0) display_page = DISPLAY_PAGE_MAX;
     display_redraw();
 }
 
@@ -52,7 +61,7 @@ display_next_page(void)
 
     //Reset refresh timer
     os_timer_disarm(&refresh_timer);
-    os_timer_setfn(&refresh_timer, (os_timer_func_t *)display_refresh, NULL);
+    os_timer_setfn(&refresh_timer, (os_timer_func_t *)display_refresh, 0);
     os_timer_arm(&refresh_timer, 5000, 0);
 }
 
@@ -66,11 +75,9 @@ display_init(void)
     }
     LCD_setCursor(0,2);
     LCD_print("Home status Display");
-    os_delay_us(5000000);
-    display_redraw();
 
     os_timer_disarm(&refresh_timer);
-    os_timer_setfn(&refresh_timer, (os_timer_func_t *)display_refresh, NULL);
-    os_timer_arm(&refresh_timer, 5000, 0);
+    os_timer_setfn(&refresh_timer, (os_timer_func_t *)display_refresh, 1);
+    os_timer_arm(&refresh_timer, 5000, 1);
 }
 
