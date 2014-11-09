@@ -12,6 +12,14 @@
 
 #define DISPLAY_PAGE_MAX 5
 
+typedef struct {
+      char line1[20];
+      char line2[20];
+      char line3[20];
+      char line4[20];
+} PageData;
+
+void display_data(uint8 page, uint8 line, char data[20]);
 void display_redraw(void);
 void display_next_page(void);
 void display_init(void);

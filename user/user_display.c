@@ -1,7 +1,30 @@
 #include "user_display.h"
 
+volatile PageData _PageData[DISPLAY_PAGE_MAX];
+
 volatile uint8 display_page = 1;
 static volatile os_timer_t refresh_timer;
+
+void ICACHE_FLASH_ATTR
+display_data(uint8 page, uint8 line, char data[20])
+{
+    page--;
+    switch (line)
+    {
+        case 1:
+            os_memcpy(&_PageData[page].line1, data, 20);
+        break; 
+        case 2:
+            os_memcpy(&_PageData[page].line2, data, 20);
+        break; 
+        case 3:
+            os_memcpy(&_PageData[page].line3, data, 20);
+        break; 
+        case 4:
+            os_memcpy(&_PageData[page].line4, data, 20);
+        break;
+    }
+}
 
 void ICACHE_FLASH_ATTR
 display_refresh(uint8 start)
@@ -22,23 +45,14 @@ display_refresh(uint8 start)
 void ICACHE_FLASH_ATTR 
 display_draw_page(uint8 page)
 {
-    switch(page) {
-        case 1:
-            LCD_print("Page 1");
-        break;
-        case 2:
-            LCD_print("Page 2");
-        break;
-        case 3:
-            LCD_print("Page 3");
-        break;
-        case 4:
-            LCD_print("Page 4");
-        break;
-        case 5:
-            LCD_print("Page 5");
-        break;
-    }
+    page--;
+    LCD_print(_PageData[page].line1);
+    LCD_setCursor(0,1);
+    LCD_print(_PageData[page].line2);
+    LCD_setCursor(0,2);
+    LCD_print(_PageData[page].line3);
+    LCD_setCursor(0,3);
+    LCD_print(_PageData[page].line4);
 }
 void ICACHE_FLASH_ATTR 
 display_redraw(void)

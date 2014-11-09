@@ -8,22 +8,21 @@ Tnx to Sprite_TM (source came from his esp8266ircbot)
 #include "mem.h"
 #include "osapi.h"
 #include "user_network.h"
+#include "user_display.h"
 #include "user_config.h"
 
-#define STATE_CONNECTED 0
-#define STATE_OPEN 1
-#define STATE_NICKSENT 2
-#define STATE_JOINED 3
-
-
-static int state=STATE_CONNECTED;
 static char lineBuf[1024];
 static int lineBufPos;
 LOCAL os_timer_t network_timer;
 
 static void ICACHE_FLASH_ATTR networkParseLine(struct espconn *conn, char *line) {
 	char buff[1024];
-	os_printf("RECV: %s\n", line);
+    uint8 page, y;
+    page = line[0];
+    y = line[1];
+    char* data = line + 2;    
+    os_printf("P-L: %x-%x: %s\n\r",page,y,data);
+    display_data(page, y, data);
 }
 
 static void ICACHE_FLASH_ATTR networkParseChar(struct espconn *conn, char c) {
@@ -31,7 +30,7 @@ static void ICACHE_FLASH_ATTR networkParseChar(struct espconn *conn, char c) {
 	if (lineBufPos>=sizeof(lineBuf)) lineBufPos--;
 
 	if (lineBufPos>2 && lineBuf[lineBufPos-1]=='\n') {
-		lineBuf[lineBufPos-2]=0;
+		lineBuf[lineBufPos-1]=0;
 		networkParseLine(conn, lineBuf);
 		lineBufPos=0;
 	}
@@ -47,7 +46,6 @@ static void ICACHE_FLASH_ATTR networkConnectedCb(void *arg) {
 	struct espconn *conn=(struct espconn *)arg;
 	espconn_regist_recvcb(conn, networkRecvCb);
 	lineBufPos=0;
-	state=STATE_OPEN;
     os_printf("connected\n\r");
 }
 
@@ -77,7 +75,7 @@ static void ICACHE_FLASH_ATTR networkServerFoundCb(const char *name, ip_addr_t *
 	conn->state=ESPCONN_NONE;
 	conn->proto.tcp=&tcp;
 	conn->proto.tcp->local_port=espconn_port();
-	conn->proto.tcp->remote_port=12345;
+	conn->proto.tcp->remote_port=12346;
 	os_memcpy(conn->proto.tcp->remote_ip, &ip->addr, 4);
 
 	espconn_regist_connectcb(conn, networkConnectedCb);
@@ -92,7 +90,6 @@ network_start() {
 	static ip_addr_t ip;
     os_printf("Looking up server...\n");
 	espconn_gethostbyname(&conn, "verlichting.client.home.gigafreak.net", &ip, networkServerFoundCb);
-	state=STATE_CONNECTED;
 }
 
 void ICACHE_FLASH_ATTR
