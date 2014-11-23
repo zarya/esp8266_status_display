@@ -26,10 +26,10 @@ TARGET		= app
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES		= driver user driver/i2c driver/i2c_hd44780
-EXTRA_INCDIR    = include /usr/include /usr/include/i386-linux-gnu
+EXTRA_INCDIR    = include /opt/Espressif/include 
 
 # libraries used in this project, mainly provided by the SDK
-LIBS		= c gcc hal phy net80211 lwip wpa main
+LIBS        = c gcc hal pp phy net80211 lwip wpa main
 
 # compiler flags using during compilation of source files
 CFLAGS		= -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
