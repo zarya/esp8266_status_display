@@ -57,13 +57,13 @@ display_draw_page(uint8 page)
 void ICACHE_FLASH_ATTR 
 display_redraw(void)
 {
-    char buffer[20];
-    os_sprintf(buffer, "%i/%i",display_page,DISPLAY_PAGE_MAX);
+    char page_buffer[20];
+    os_sprintf(page_buffer, "%i/%i",display_page,DISPLAY_PAGE_MAX);
     LCD_clear();
-    LCD_setCursor(17,3);
-    LCD_print(buffer);
     LCD_setCursor(0,0);
     display_draw_page(display_page);    
+    LCD_setCursor(17,3);
+    LCD_print(page_buffer);
 }
 
 void ICACHE_FLASH_ATTR 
@@ -71,6 +71,19 @@ display_next_page(void)
 {
     display_page++;
     if (display_page > DISPLAY_PAGE_MAX) display_page = 1;
+    display_redraw();
+
+    //Reset refresh timer
+    os_timer_disarm(&refresh_timer);
+    os_timer_setfn(&refresh_timer, (os_timer_func_t *)display_refresh, 0);
+    os_timer_arm(&refresh_timer, 5000, 0);
+}
+
+void ICACHE_FLASH_ATTR 
+display_prev_page(void)
+{
+    display_page--;
+    if (display_page == 0) display_page = DISPLAY_PAGE_MAX;
     display_redraw();
 
     //Reset refresh timer

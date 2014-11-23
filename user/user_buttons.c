@@ -1,18 +1,41 @@
 #include "user_buttons.h"
 
+extern volatile uint32_t PIN_IN;
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
 static volatile os_timer_t debounce_timer;
 
 void ICACHE_FLASH_ATTR
-buttons_debounce()
+buttons_debounce(uint8 direction)
 {
-    gpio_pin_intr_state_set(GPIO_ID_PIN(12), GPIO_PIN_INTR_POSEDGE);
-    display_next_page();
+    gpio_pin_intr_state_set(GPIO_ID_PIN(12), GPIO_PIN_INTR_ANYEGDE);
+
+    if (direction == 1)
+    {
+        os_printf("Up");
+        display_next_page();
+    }
+    else
+    {
+        os_printf("Down");
+        display_prev_page();
+    }
 }
 
 
 LOCAL void
 buttons_intr_handler(int8_t key)
 {
+    uint8 direction = 0;
+    uint32 inputs;
+    
+    os_delay_us(1);
+    inputs = PIN_IN;
+
+    //Read rotary state
+    if (CHECK_BIT(inputs,13) == CHECK_BIT(inputs,12))
+        direction = 1;
+
     //Not that sure what this does yet and where the register is used for
     uint32 gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
 
@@ -26,7 +49,7 @@ buttons_intr_handler(int8_t key)
     os_timer_disarm(&debounce_timer);
 
     //Setup timer
-    os_timer_setfn(&debounce_timer, (os_timer_func_t *)buttons_debounce, NULL);
+    os_timer_setfn(&debounce_timer, (os_timer_func_t *)buttons_debounce, direction);
 
     //Arm the debounce timer
     os_timer_arm(&debounce_timer, 500, 0);
@@ -35,7 +58,7 @@ buttons_intr_handler(int8_t key)
 void ICACHE_FLASH_ATTR
 buttons_init()
 {
-    //Attach pin 0 to the interrupt thing
+    //Attach the interrupt thing
     ETS_GPIO_INTR_ATTACH(buttons_intr_handler,12);
 
     //Disable interrupts
@@ -60,9 +83,10 @@ buttons_init()
 
     //clear gpio status
     GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(12));
+    GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(13));
 
     //re-enable gpio0 interrupt
-    gpio_pin_intr_state_set(GPIO_ID_PIN(12), GPIO_PIN_INTR_POSEDGE);
+    gpio_pin_intr_state_set(GPIO_ID_PIN(12), GPIO_PIN_INTR_ANYEGDE);
 
     //Global re-enable interrupts
     ETS_GPIO_INTR_ENABLE();

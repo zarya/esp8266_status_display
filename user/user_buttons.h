@@ -8,7 +8,6 @@
 #include "config.h"
 #include "user_display.h"
 
-
 void buttons_init(void);
 
 #endif
