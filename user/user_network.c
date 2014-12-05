@@ -71,6 +71,13 @@ static void ICACHE_FLASH_ATTR networkServerFoundCb(const char *name, ip_addr_t *
         *((uint8 *)&ip->addr), *((uint8 *)&ip->addr + 1),
         *((uint8 *)&ip->addr + 2), *((uint8 *)&ip->addr + 3));
 
+    char page_buffer[20];
+    os_sprintf(page_buffer,"DST: %d.%d.%d.%d",
+        *((uint8 *)&ip->addr), *((uint8 *)&ip->addr + 1),
+        *((uint8 *)&ip->addr + 2), *((uint8 *)&ip->addr + 3));
+    LCD_setCursor(0,1);
+    LCD_print(page_buffer);
+    LCD_setCursor(11,3);
 	conn->type=ESPCONN_TCP;
 	conn->state=ESPCONN_NONE;
 	conn->proto.tcp=&tcp;
@@ -101,7 +108,13 @@ network_check_ip(void)
 
     wifi_get_ip_info(STATION_IF, &ipconfig);
 
+
     if (wifi_station_get_connect_status() == STATION_GOT_IP && ipconfig.ip.addr != 0) {
+        char page_buffer[20];
+        os_sprintf(page_buffer,"IP: %d.%d.%d.%d",IP2STR(&ipconfig.ip));
+        LCD_setCursor(0,0);
+        LCD_print(page_buffer);
+        LCD_setCursor(11,3);
         network_start();
     }
     else 

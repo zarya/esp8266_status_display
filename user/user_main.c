@@ -34,6 +34,7 @@ void user_init(void)
 
     //Setup wifi
     wifi_set_opmode( 0x1 );
+    wifi_set_phy_mode(PHY_MODE_11N);
     wifi_station_set_config(&stationConf);
 
     network_init();
